@@ -1,0 +1,119 @@
+.pwcmb {
+    box-sizing: border-box;
+}
+.pwcmb * {
+    box-sizing: border-box;
+}
+
+.pwcmb {
+    position: fixed;
+    z-index: 601;
+    background: white;
+    width: 100%;
+    left: 0;
+    transition: top 0.25s;
+}
+
+.js-show.pwcmb--top_overlay,
+.js-show.pwcmb--top_push {
+    top: 0px;
+}
+
+.pwcmb--bottom_overlay {
+    bottom: -400px;
+}
+
+.js-show.pwcmb--bottom_overlay {
+    bottom: 0px;
+}
+
+.pwcmb-widget {
+    position: absolute;
+    width: 100%;
+    padding: 20px;
+    transition: 0.25s;
+    background: whitesmoke;
+}
+
+.pwcmb--bottom_overlay .pwcmb-widget { bottom: -100vh; }
+.pwcmb--bottom_overlay .js-show.pwcmb-widget {
+    bottom: 0;
+}
+.pwcmb--top_overlay .pwcmb-widget { top: -100vh; }
+.pwcmb--top_overlay .js-show.pwcmb-widget {
+    top: 0;
+}
+
+.pwcmb-widget__close {
+    visibility: hidden;
+}
+
+.pwcmb-widget__close::before {
+    content: '×';
+    visibility: visible;
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 10px;
+    font-size: 30px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.pwcmb-widget__copy {
+    padding-right: 20px;
+}
+
+.pwcmb-widget__title {
+    font-weight: bold;
+}
+
+.pwcmb-widget__row-label { font-weight: bold; }
+.pwcmb-widget__row-text { display: inline; }
+.pwcmb-widget__row-text:before { content: ' - '; }
+
+.pwcmb-widget__actions {
+    white-space: nowrap;
+}
+
+.pwcmb-widget button {
+    white-space: nowrap;
+}
+
+.js-pwcmb-notice-toggle {
+    cursor: pointer;
+}
+
+.pwcmb-option-wrapper {
+    position: relative;
+}
+
+
+@media screen and (max-width: 767px) {
+    .pwcmb-widget__inner {
+        display: flex;
+        flex-direction: column;
+    }
+    .pwcmb-widget__row-label,
+    .pwcmb-widget__text {
+        font-size: 12px;
+    }
+
+    .pwcmb-widget__actions {
+        padding-top: 20px;
+    }
+
+}
+
+@media screen and (min-width: 768px) {
+    .pwcmb-widget__inner {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .pwcmb-widget__actions {
+        margin-left: auto;
+    }
+
+}

@@ -1,0 +1,123 @@
+<?php
+
+/**
+ *
+ * GDPR cookie management banner
+ * by Adrian Jones and Oliver Walker
+ *
+ * ProcessWire 3.x
+ * Copyright (C) 2011 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ */
+
+class CookieManagementBanner extends WireData implements Module {
+
+    public static function getModuleInfo() {
+        return array(
+            'title'    => 'Cookie Management Banner',
+            'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
+            'author'   => 'Adrian Jones and Oliver Walker',
+            'href'     => '',
+            'version'  => '0.0.1',
+            'autoload' => true,
+            'singular' => true
+        );
+    }
+
+    public function init() {
+
+        if(!$this->status) return;
+
+        if($this->eu_visitors_only) {
+            if(!$this->wire('session')->userFromEu) {
+                $http = new WireHttp();
+                // test EU IP address
+                //$userLocation = $http->getJSON('https://extreme-ip-lookup.com/json/85.214.132.117');
+                $userLocation = $http->getJSON('https://extreme-ip-lookup.com/json/'.$this->get_user_ip_addr());
+                $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['countryCode'].'?fields=regionalBlocs');
+                if($countryInfo['regionalBlocs'] && $this->hasEuBloc($countryInfo['regionalBlocs'])) {
+                    $this->wire('session')->userFromEu = 'true';
+                }
+                else {
+                    $this->wire('session')->userFromEu = 'false';
+                }
+            }
+            if($this->wire('session')->userFromEu != 'true') return;
+        }
+
+        $this->addHookAfter('Page::render', null, function(HookEvent $event) {
+
+            $page = $event->object;
+
+            // stop here in backend except on this module's config page (for demonstration)
+            if($page->template == 'admin' && $this->wire('input')->get->name != $this) return;
+
+            // get user language to determine what language to output banner text in
+            if($this->wire('languages')) {
+                $userLanguage = $this->wire('user')->language;
+                $lang = $userLanguage->isDefault() ? '' : "__$userLanguage->id";
+            }
+            else {
+                $lang = '';
+            }
+
+            // inject assets and banner tpl files
+            $cookieBanner = $this->wire('files')->render($this->wire('config')->paths->$this.'wrapper.tpl.php', array('module' => $this, 'lang' => $lang));
+            $moduleUrl = $this->wire('config')->urls->$this;
+            $event->return = $this->str_replace_once("<link ", "<link rel='stylesheet' type='text/css' href='{$moduleUrl}assets/css/{$this}.css' />\n<link ", $event->return);
+            $jsVars = '
+            <script>
+                var pwcmb_settings = {
+                    status: "'.$this->status.'",
+                    version: "'.$this->version.'",
+                    auto_accept: "'.$this->auto_accept.'"
+                };
+            </script>
+            ';
+            $jsFile = "<script src='{$moduleUrl}assets/js/{$this}.js'></script>";
+            $event->return = str_replace("</body>", "{$cookieBanner}{$jsVars}{$jsFile}</body>", $event->return);
+
+        });
+    }
+
+    // get the user ip address
+    private function get_user_ip_addr() {
+        if(!empty($_SERVER["HTTP_CLIENT_IP"])) {
+            //check for ip from share internet
+            $ip = $_SERVER["HTTP_CLIENT_IP"];
+        }
+        elseif(!empty($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+            // Check for the Proxy User
+            $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+        }
+        else {
+            $ip = $_SERVER["REMOTE_ADDR"];
+        }
+
+        return $ip;
+    }
+
+    // determine if return regionalBlocs array contains EU
+    private function hasEuBloc($array) {
+        foreach($array as $item) {
+            if($item['acronym'] === 'EU') {
+                return true;
+            }
+        }
+       return false;
+    }
+
+    // replace once helper
+    private function str_replace_once($needle, $replacement, $haystack) {
+        $pos = strpos($haystack, $needle);
+        if($pos !== false) {
+            $haystack = substr_replace($haystack, $replacement, $pos, strlen($needle));
+        }
+        return $haystack;
+    }
+
+}
