@@ -1,4 +1,4 @@
-# Cookie Management Banner ProcessWire
+# Cookie Management Banner for ProcessWire
 This module adds a cookie management banner for GDPR compliance.
 
 The user can accept all cookies or they can choose to not accept tracking/marketing cookies.
