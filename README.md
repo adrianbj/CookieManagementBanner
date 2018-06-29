@@ -16,6 +16,11 @@ You can wrap your tracking/marketing cookie code in a check for the localstorage
 if(localStorage.getItem('pwcmbAllowCookies') == 'y')
 ```
 
+You can also provide a link on your site (probably in the footer) like this that will allow the user to show the banner even after they have saved their preferences / accepted.
+```
+<a href="#cookies" class="js-pwcmb-notice-toggle">Manage Your Cookies</a>
+```
+
 ### Support Forum
 For support for this module, please visit this thread on the ProcessWire forum: https://processwire.com/talk/topic/19525-cookie-management-banner/
 
