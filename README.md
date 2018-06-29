@@ -17,7 +17,7 @@ if(localStorage.getItem('pwcmbAllowCookies') == 'y')
 ```
 
 ### Support Forum
-For support for this module, please visit this thread on the ProcessWire forum:
+For support for this module, please visit this thread on the ProcessWire forum: https://processwire.com/talk/topic/19525-cookie-management-banner/
 
 ### ProcessWire Modules Directory
 http://modules.processwire.com/modules/cookie-management-banner/
