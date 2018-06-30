@@ -9,7 +9,9 @@ Module config options allow you to:
 * option to limit display of banner to users only in European Union (by IP address)
 * position selection (top or bottom overlay, or content pushed down from the top)
 
-Comes with basic default styling which is easily overwritten by site CSS
+It comes with basic default styling which is easily overwritten by site CSS
+
+The module sets various values to the dataLayer array which works together with [Google Tag Manager](https://www.google.com/analytics/tag-manager/) - please read through the code in /assets/js/CookieManagementBanner.js to get a better idea of how this works and what is made available for GTM.
 
 You can wrap your tracking/marketing cookie code in a check for the localstorage key of: pwcmbAllowCookies
 ```
