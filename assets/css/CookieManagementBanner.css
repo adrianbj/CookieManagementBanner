@@ -46,6 +46,7 @@
 
 .pwcmb-widget__close {
     visibility: hidden;
+    cursor: pointer;
 }
 
 .pwcmb-widget__close::before {
@@ -57,7 +58,6 @@
     right: 10px;
     font-size: 30px;
     overflow: hidden;
-    cursor: pointer;
 }
 
 .pwcmb-widget__copy {
