@@ -24,6 +24,14 @@ $config = array(
             ),
             array(
                 'type' => 'checkbox',
+                'name' => 'autoload_assets',
+                'label' => __('Autoload Assets'),
+                'description' => __('Autoload module CSS and JS files.'),
+                'notes' => __("If you disable this, you will need to load these files manually:\n```<link rel='stylesheet' type='text/css' href='/site/modules/CookieManagementBanner/assets/css/CookieManagementBanner.css' />\n<script defer src='/site/modules/CookieManagementBanner/assets/js/CookieManagementBanner.js'></script>```\nNOTE: you must load the JS file with the defer attribute."),
+                'value' => 1
+            ),
+            array(
+                'type' => 'checkbox',
                 'name' => 'eu_visitors_only',
                 'label' => __('Only display for EU visitors'),
                 'notes' => __('Only visitors from the EU (based on IP address) will see the banner.'),
@@ -152,10 +160,8 @@ $config = array(
                 'type' => 'select',
                 'name' => 'style',
                 'label' => __("Position"),
-                'notes' => __('Selection reveals more options'),
                 'options' => array(
                     'top_overlay' => __('Fixed Overlay at Top of Page'),
-                    'top_push' => __('Push Site content down from Top of Page'),
                     'bottom_overlay' => __('Fixed Overlay at Bottom of Page')
                 ),
                 'columnWidth' => 33,

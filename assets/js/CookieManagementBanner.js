@@ -187,6 +187,7 @@
                     cookieMonster.cfg.storedVersion != cookieMonster.cfg.version
                 ) {
                     cookieMonster.ui.show();
+                    $('body').addClass('pwcmb-active');
                 }
 
                 cookieMonster.setStatus(); //on page load

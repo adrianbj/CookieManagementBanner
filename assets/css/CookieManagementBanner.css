@@ -35,11 +35,11 @@
     background: whitesmoke;
 }
 
-.pwcmb--bottom_overlay .pwcmb-widget { bottom: -100vh; }
+.pwcmb--bottom_overlay .pwcmb-widget { bottom: -9999px; }
 .pwcmb--bottom_overlay .js-show.pwcmb-widget {
     bottom: 0;
 }
-.pwcmb--top_overlay .pwcmb-widget { top: -100vh; }
+.pwcmb--top_overlay .pwcmb-widget { top: -9999px; }
 .pwcmb--top_overlay .js-show.pwcmb-widget {
     top: 0;
 }
