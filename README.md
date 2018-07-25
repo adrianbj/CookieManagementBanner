@@ -7,6 +7,7 @@ Module config options allow you to:
 * define all text and button labels (multi-language support)
 * manually increment the cookie policy version which forces the user to review their consent again
 * option to limit display of banner to users only in European Union (by IP address)
+* option to auto accept based on any interaction from the user with the site
 * position selection (top or bottom overlay, or content pushed down from the top)
 
 It comes with basic default styling which is easily overwritten by site CSS

@@ -1,7 +1,10 @@
 (function ($) {
 
+    // older versions of jQuery need to use the `attr` method to modify node properties, newer versions use `prop`
+    var method = parseInt(jQuery.fn.jquery.split('.')[1], 10) > 6 ? 'prop' : 'attr';
+
     var pwcmb = {
-        attach: function (context, settings) {
+        attach: function () {
             if(!pwcmb_settings.status) return;
 
             window.dataLayer = window.dataLayer || [];
@@ -21,6 +24,7 @@
                 block: $('.js-pwcmb-block-cookies'),
                 allowCookies: 'n', //current tracking state
                 allowStorage: (typeof(Storage) !== "undefined"),
+                viewCount : 0,
                 selectionMade: 'n', //whether a selection has been made by the user
                 acceptanceSet: 0 //keeps track of whether acceptance has been set in current page load or not
             }
@@ -65,16 +69,30 @@
                     localStorage.setItem("pwcmbAllowCookies", cookieMonster.cfg.allowCookies);
                     localStorage.setItem("pwcmbSelectionMade", cookieMonster.cfg.selectionMade);
                     localStorage.setItem("pwcmbVersion", cookieMonster.cfg.storedVersion);
+                    localStorage.setItem("pwcmbViewCount", cookieMonster.cfg.viewCount);
                 }
             }
 
             //set cookieMonster variables when user allows
-            cookieMonster.allow = function() {
+
+            /**
+             *
+             *
+             * @param explicit {Boolean}
+             */
+            cookieMonster.allow = function(explicit) {
+
+                if (explicit) {
+                    cookieMonster.cfg.viewCount = -1;
+                }
+
                 cookieMonster.cfg.allowCookies = "y";
                 cookieMonster.cfg.selectionMade = "y";
                 cookieMonster.cfg.storedVersion = cookieMonster.cfg.version;
                 cookieMonster.sendActionBeacon();
                 cookieMonster.updateStatus();
+                cookieMonster.setUserPreferences();
+
             }
 
             //set cookieMonster variables when user blocks
@@ -89,7 +107,7 @@
             //cookieMonster UI actions and methods
             cookieMonster.ui = {
                 cfg: {
-                  initialBodyPadding:  parseInt($('body').css('padding-top')),
+                    initialBodyPadding:  parseInt($('body').css('padding-top')),
                 },
                 updateUi: function(animate) {
                     var h = $('.js-show.pwcmb--top_push').outerHeight();
@@ -121,81 +139,153 @@
                 },
                 actions: function() {
 
-                    cookieMonster.cfg.allow.click(function() {
-                        cookieMonster.allow();
+                    if(
+                        cookieMonster.cfg.allowCookies == "y"
+                    ) {
+                        $('.js-pwcmb-marketing-pref--y')[method]('checked', true);
+                    } else if (cookieMonster.cfg.allowCookies == "n") {
+                        $('.js-pwcmb-marketing-pref--n')[method]('checked', true);
+                    }
+
+                    cookieMonster.cfg.allow.click(function allowClick() {
+
+                        cookieMonster.cfg.viewCount = -1;
+                        if (cookieMonster.cfg.allowCookies !== "y") {
+                            cookieMonster.allow(true);
+                        }
+
+                        cookieMonster.setUserPreferences();
                         cookieMonster.ui.showMessage();
                     });
 
                     if($('.js-show.pwcmb--top_push').length) {
                         cookieMonster.ui.updateUi(true);
-                        $(window).resize(function() {
+                        $(window).resize(function resizeWindow() {
                             cookieMonster.ui.updateUi(false);
                         })
                     }
 
-                    $('.js-pwcmb-manage-cookies').on('click', function() {
+                    $('.js-pwcmb-manage-cookies').bind('click', function manageClick() {
                         cookieMonster.ui.showManage();
                         if(
                             cookieMonster.cfg.allowCookies == "y"
                         ) {
-                            $('.js-pwcmb-marketing-pref--y').prop('checked', true);
+
+                            $('.js-pwcmb-marketing-pref--y')[method]('checked', true);
                         } else if (cookieMonster.cfg.allowCookies == "n") {
-                            $('.js-pwcmb-marketing-pref--n').prop('checked', true);
+                            $('.js-pwcmb-marketing-pref--n')[method]('checked', true);
                         }
                     });
 
-                    $('.pwcmb-widget__row-cb').on('change', function() {
+                    $('.pwcmb-widget__row-cb').bind('change', function change() {
                         var checked = $(this).is(':checked');
-                        $(this).parents('.pwcmb-option-wrapper').siblings().find('.pwcmb-widget__row-cb').prop('checked', !checked);
+                        $(this).parents('.pwcmb-option-wrapper').siblings().find('.pwcmb-widget__row-cb')[method]('checked', !checked);
                     });
 
-                    $('.js-pwcmb-save-pref').on('click', function() {
+                    $('.js-pwcmb-save-pref').bind('click', function savePreferenceClick() {
                         var _val = $('.js-pwcmb-marketing-pref--y').is(':checked');
                         if(_val) {
-                            cookieMonster.allow();
+                            cookieMonster.allow(true);
                         } else {
                             cookieMonster.block();
                         }
                         cookieMonster.ui.showMessage();
                     });
 
-                    $('.js-pwcmb-notice-toggle').on('click', function(e) {
+                    $('.js-pwcmb-notice-toggle').bind('click', function toggleClick(e) {
                         e.preventDefault();
                         cookieMonster.ui.show();
+                        cookieMonster.ui.showManage();
                     })
                 },
                 show: function() {
                     //first step
                     cookieMonster.cfg.wrapper.addClass(cookieMonster.cfg.visibleClass);
                     cookieMonster.ui.showNotice();
+                    // add pwcmb class to body when banner is active
+                    // not used by this module, but available for devs for their use
+                    $('body').addClass('pwcmb-active');
                 }
             }
 
+            /**
+             * Entry point to cookie initialization
+             *
+             */
             cookieMonster.init = function() {
+
+                /*
+                 auto_fire is a truthy value when "EU only" mode is enabled and the visitor is deemed to be NOT from the EU,
+                 in which case we want to fire the "set cookies" event immediately, hide any "manage cookies links" in the page,
+                 and then ignore all further processing
+                 */
+                if (pwcmb_settings.auto_fire == 'true') {
+                    cookieMonster.cfg.allowCookies = 'y';
+                    cookieMonster.sendTrackingBeacon();
+                    $('.js-pwcmb-notice-toggle').remove();
+                    return;
+                }
+
                 if(cookieMonster.cfg.allowStorage) {
                     cookieMonster.cfg.allowCookies = localStorage.getItem("pwcmbAllowCookies");
                     cookieMonster.cfg.selectionMade = localStorage.getItem("pwcmbSelectionMade");
                     cookieMonster.cfg.storedVersion = localStorage.getItem("pwcmbVersion");
+                    cookieMonster.cfg.viewCount = localStorage.getItem("pwcmbViewCount") ? parseInt(localStorage.getItem("pwcmbViewCount"), 10) : 0;
                 } else {
                     return;
                 }
 
-                //determine whether to show the modal or not
-                //show if the user has not made a selection either way, or if version has changed
-                if(
-                    cookieMonster.cfg.selectionMade != "y" ||
-                    cookieMonster.cfg.storedVersion != cookieMonster.cfg.version
-                ) {
-                    cookieMonster.ui.show();
-                    $('body').addClass('pwcmb-active');
-                }
-
-                cookieMonster.setStatus(); //on page load
+                // attach all listeners
                 cookieMonster.ui.actions();
 
-            }
+                // have they implicitly or explicitly made a choice?
+                if (cookieMonster.cfg.selectionMade == "y") {
+
+                    // have they implicitly or explicitly made a choice?
+                    if (localStorage.getItem('pwcmbViewcount') || ! localStorage.getItem('pwcmbViewCount')) {
+                        cookieMonster.cfg.viewCount = -1;
+                        cookieMonster.setUserPreferences();
+                    }
+
+                    cookieMonster.setStatus(); //on page load
+
+                    // if they haven't explicitly accepted it (ie: auto-accept) then display the banner
+                    if (pwcmb_settings.auto_accept && cookieMonster.cfg.viewCount != -1) {
+                        cookieMonster.ui.show();
+                    }
+                }
+
+                if (pwcmb_settings.auto_accept) {
+
+                    if (cookieMonster.cfg.viewCount == -1) {
+                        cookieMonster.setUserPreferences();
+
+                    // auto-accept mode is on but they have not explicitly accepted the terms
+                    } else {
+
+                        // if this is NOT the first page view (ie: 2nd, 3rd, 4th, 5th, ...) pageview, then implicitly allow cookies
+                        if (cookieMonster.cfg.viewCount == 1) {
+                            cookieMonster.allow(false);
+                        }
+
+                        // but if they haven't explicitly allowed cookies, then display the banner
+                        if (cookieMonster.cfg.viewCount >= 0) {
+                            cookieMonster.ui.show();
+                            cookieMonster.cfg.viewCount++;
+                        }
+                        cookieMonster.setUserPreferences();
+                    }
+
+                // if auto-accept is off and they haven't selected anything, display the banner
+                } else {
+                    if (cookieMonster.cfg.selectionMade !== 'y') {
+                        cookieMonster.ui.show();
+                    }
+                }
+            };
 
             cookieMonster.init();
+
         }
     };
 
