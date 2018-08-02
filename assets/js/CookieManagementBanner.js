@@ -1,7 +1,7 @@
 (function ($) {
 
     // older versions of jQuery need to use the `attr` method to modify node properties, newer versions use `prop`
-    var method = parseInt(jQuery.fn.jquery.split('.')[1], 10) > 6 ? 'prop' : 'attr';
+    var method = $.fn.jquery.replace(/\.(\d)/g,".0$1").replace(/\.0(\d{2})/g,".$1") > "1.6" ? 'prop' : 'attr';
 
     var pwcmb = {
         attach: function () {
