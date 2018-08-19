@@ -22,7 +22,7 @@ class CookieManagementBanner extends WireData implements Module {
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
             'author'   => 'Adrian Jones and Oliver Walker',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.2.2',
+            'version'  => '0.2.3',
             'autoload' => true,
             'singular' => true
         );
@@ -75,7 +75,7 @@ class CookieManagementBanner extends WireData implements Module {
             $moduleUrl = $this->wire('config')->urls->$this;
             // we don't need to load the tpl or css files if the user isn't potentially going to see the banner
             if(!$this->eu_visitors_only || ($this->eu_visitors_only && $this->wire('session')->userFromEu == 'true')) {
-                $cookieBanner = $this->wire('files')->render($this->wire('config')->paths->$this.'wrapper.tpl.php', array('module' => $this, 'lang' => $lang));
+                $cookieBanner = wireRenderFile($this->wire('config')->paths->$this.'wrapper.tpl.php', array('module' => $this, 'lang' => $lang));
                 if($this->autoload_assets) $event->return = $this->str_replace_once("<link ", "<link rel='stylesheet' type='text/css' href='{$moduleUrl}assets/css/{$this}.css' />\n<link ", $event->return);
             }
             else {
