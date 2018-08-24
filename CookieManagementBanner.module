@@ -85,9 +85,9 @@ class CookieManagementBanner extends WireData implements Module {
                     $this->wire('session')->userFromEu = 'false';
                 }
 
-                if($this->wire('modules')->isInstalled('TracyDebugger')) {
-                    bd($userLocation, 'User Location from: '. $this->usedService);
-                    bd($countryInfo, 'From EU Test: ' . $this->wire('session')->userFromEu);
+                if($this->wire('modules')->isInstalled('TracyDebugger') && method_exists('\TD', 'barDump')) {
+                    \TD::barDump($userLocation, 'User Location from: '. $this->usedService);
+                    \TD::barDump($countryInfo, 'From EU Test: ' . $this->wire('session')->userFromEu);
                 }
 
             }
