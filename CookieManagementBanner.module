@@ -22,7 +22,7 @@ class CookieManagementBanner extends WireData implements Module {
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
             'author'   => 'Adrian Jones and Oliver Walker',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.2.4',
+            'version'  => '0.3.0',
             'autoload' => true,
             'singular' => true
         );
@@ -45,28 +45,56 @@ class CookieManagementBanner extends WireData implements Module {
             if(!$this->wire('session')->userFromEu) {
                 $http = new WireHttp();
 
-                $ipAddress = $this->get_user_ip_addr();
-                //$ipAddress = '85.214.132.117'; // test EU IPv4 address
-                //$ipAddress = '2003:da:cbd6:8872:29f3:69e5:f8fc:9c04'; // test EU IPv6 address
+                if($this->wire('page')->template == 'admin' && $this->wire('input')->get->name == $this) {
+                    $ipAddress = $this->ip_test ?: '';
+                }
+                else {
+                    $ipAddress = '';
+                }
 
-                // old service that doesn't support IPv6
-                //$userLocation = $http->getJSON('https://extreme-ip-lookup.com/json/'.$ipAddress);
-                //$countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['countryCode'].'?fields=regionalBlocs');
+                foreach($this->ip_country_service as $ipService) {
+                    if($ipService == 'ip.nf') {
+                        // supports IPv6 but their server only supports 40 req/s which I worry might be an issue in the future?
+                        $userLocation = $http->getJSON('https://ip.nf/' . ($ipAddress != '' ? $ipAddress : 'me') . '.json');
+                        if(!isset($userLocation['ip']['country_code']) || $userLocation['ip']['country_code'] == '') continue;
+                        $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['ip']['country_code'].'?fields=regionalBlocs');
+                    }
+                    if($ipService == 'geoip.nekudo.com') {
+                        // no limit service that supports IPv4 and IPv6
+                        $userLocation = $http->getJSON('https://geoip.nekudo.com/api/'.$ipAddress);
+                        if(!isset($userLocation['country']['code']) || $userLocation['country']['code'] == '') continue;
+                        $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['country']['code'].'?fields=regionalBlocs');
+                    }
+                    if($ipService == 'ip.sb') {
+                        // no info provided on limits
+                        $userLocation = $http->getJSON('https://api.ip.sb/geoip/'.$ipAddress);
+                        if(!isset($userLocation['country_code']) || $userLocation['country_code'] == '') continue;
+                        $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['country_code'].'?fields=regionalBlocs');
+                    }
+                    if(isset($countryInfo['regionalBlocs']) && $countryInfo['regionalBlocs'] != '') {
+                        $this->usedService = $ipService;
+                        break;
+                    }
+                }
 
-                // new service that does support IPv6
-                $userLocation = $http->getJSON('https://ip.nf/'.$ipAddress.'.json');
-                $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['ip']['country_code'].'?fields=regionalBlocs');
 
-                if($countryInfo['regionalBlocs'] && $this->hasEuBloc($countryInfo['regionalBlocs'])) {
+                if(isset($countryInfo['regionalBlocs']) && $countryInfo['regionalBlocs'] != '' && $this->hasEuBloc($countryInfo['regionalBlocs'])) {
                     $this->wire('session')->userFromEu = 'true';
                 }
                 else {
                     $this->wire('session')->userFromEu = 'false';
                 }
+
+                if($this->wire('modules')->isInstalled('TracyDebugger')) {
+                    bd($userLocation, 'User Location from: '. $this->usedService);
+                    bd($countryInfo, 'From EU Test: ' . $this->wire('session')->userFromEu);
+                }
+
             }
             if($this->wire('session')->userFromEu != 'true') {
                 $this->auto_fire = 'true';
             }
+
         }
 
         $this->addHookAfter('Page::render', null, function(HookEvent $event) {
@@ -106,24 +134,16 @@ class CookieManagementBanner extends WireData implements Module {
             $event->return = str_replace("</body>", "{$cookieBanner}{$jsVars}{$jsFile}</body>", $event->return);
 
         });
+
+        // remove userFromEU session variable when saving the module config settings page
+        // makes it easier to use the IP Address Test field
+        $this->wire('modules')->addHookAfter('saveModuleConfigData', null, function($event) {
+            if($event->arguments[0] != $this) return;
+            $this->wire('session')->remove('userFromEu');
+        });
+
     }
 
-    // get the user ip address
-    private function get_user_ip_addr() {
-        if(!empty($_SERVER["HTTP_CLIENT_IP"])) {
-            //check for ip from share internet
-            $ip = $_SERVER["HTTP_CLIENT_IP"];
-        }
-        elseif(!empty($_SERVER["HTTP_X_FORWARDED_FOR"])) {
-            // Check for the Proxy User
-            $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-        }
-        else {
-            $ip = $_SERVER["REMOTE_ADDR"];
-        }
-
-        return $ip;
-    }
 
     // determine if return regionalBlocs array contains EU
     private function hasEuBloc($array) {

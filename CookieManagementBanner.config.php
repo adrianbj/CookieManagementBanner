@@ -35,16 +35,40 @@ $config = array(
                 'name' => 'eu_visitors_only',
                 'label' => __('Only display for EU visitors'),
                 'description' => __('Only visitors from the EU (based on IP address) will see the banner.'),
-                'notes' => __('This will send location data to https://ip.nf/ and https://restcountries.eu/'),
+                'notes' => __('This will send location data to the IP to Country service selected, along with https://restcountries.eu to determine if the user is in a country in the EU.'),
                 'columnWidth' => 33,
                 'value' => null
+            ),
+            array(
+                'type' => 'AsmSelect',
+                'name' => 'ip_country_service',
+                'label' => __('IP to country service'),
+                'description' => __('Service to determine user\'s country. Only relevant if "Only display for EU visitors" is checked. Services will be pinged in the selected order.'),
+                'notes' => __('A big thanks to all these free services, especially [https://ip.nf/](https://ip.nf/) who kindly answered many questions about their service.'),
+                'options' => array(
+                    'ip.nf' => 'https://ip.nf/',
+                    'geoip.nekudo.com' => 'https://geoip.nekudo.com/api/',
+                    'ip.sb' => 'https://ip.sb/api/'
+                ),
+                'columnWidth' => 34,
+                'required' => true,
+                'requiredIf' => 'eu_visitors_only=1',
+                'value' => array('ip.nf', 'geoip.nekudo.com', 'ip.sb')
+            ),
+            array(
+                'type' => 'text',
+                'name' => 'ip_test',
+                'label' => __('IP Address Test'),
+                'description' => __('You can use this to test the result of an IP address. This is only relevant on this module settings page - it won\'t affect what is reported for users on the site.'),
+                'notes' => __("You can use 85.214.132.117 or 2003:da:cbd6:8872:29f3:69e5:f8fc:9c04 as valid tests for Germany (which is in the EU). If this is blank the system will use your actual IP address.\n\n** From EU Test: ** `".$this->wire('session')->userFromEu."`"),
+                'columnWidth' => 33
             ),
             array(
                 'type' => 'checkbox',
                 'name' => 'allow_manage',
                 'label' => __('Allow users to manage'),
                 'description' => __('This gives users the option to manage their acceptance of tracking cookies.'),
-                'columnWidth' => 34,
+                'columnWidth' => 50,
                 'value' => 1
             ),
             array(
@@ -52,7 +76,7 @@ $config = array(
                 'name' => 'auto_accept',
                 'label' => __('Auto-accept mode'),
                 'description' => __('Enabling auto-accept mode will send the acceptance beacon if the document is interacted with in any way.'),
-                'columnWidth' => 33,
+                'columnWidth' => 50,
                 'value' => 0
             ),
         )
