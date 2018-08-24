@@ -34,7 +34,8 @@ $config = array(
                 'type' => 'checkbox',
                 'name' => 'eu_visitors_only',
                 'label' => __('Only display for EU visitors'),
-                'notes' => __('Only visitors from the EU (based on IP address) will see the banner.'),
+                'description' => __('Only visitors from the EU (based on IP address) will see the banner.'),
+                'notes' => __('This will send location data to https://ip.nf/ and https://restcountries.eu/'),
                 'columnWidth' => 33,
                 'value' => null
             ),
@@ -42,7 +43,7 @@ $config = array(
                 'type' => 'checkbox',
                 'name' => 'allow_manage',
                 'label' => __('Allow users to manage'),
-                'notes' => __('This gives users the option to manage their acceptance of tracking cookies.'),
+                'description' => __('This gives users the option to manage their acceptance of tracking cookies.'),
                 'columnWidth' => 34,
                 'value' => 1
             ),
@@ -50,7 +51,7 @@ $config = array(
                 'type' => 'checkbox',
                 'name' => 'auto_accept',
                 'label' => __('Auto-accept mode'),
-                'notes' => __('Enabling auto-accept mode will send the acceptance beacon if the document is interacted with in any way.'),
+                'description' => __('Enabling auto-accept mode will send the acceptance beacon if the document is interacted with in any way.'),
                 'columnWidth' => 33,
                 'value' => 0
             ),

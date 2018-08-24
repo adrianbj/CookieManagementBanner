@@ -22,24 +22,41 @@ class CookieManagementBanner extends WireData implements Module {
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
             'author'   => 'Adrian Jones and Oliver Walker',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.2.3',
+            'version'  => '0.2.4',
             'autoload' => true,
             'singular' => true
         );
     }
 
-    public function init() {
+    public function init() {}
+
+    public function ready() {
 
         if(!$this->status) return;
+
+        // don't render in formbuilder iframe
+        if($this->wire('page')->template == 'form-builder') return;
+
+        // stop here in backend except on this module's config page (for demonstration)
+        if($this->wire('page')->template == 'admin' && $this->wire('input')->get->name != $this) return;
 
         if($this->eu_visitors_only) {
             $this->auto_fire = 'false';
             if(!$this->wire('session')->userFromEu) {
                 $http = new WireHttp();
-                $userLocation = $http->getJSON('https://extreme-ip-lookup.com/json/'.$this->get_user_ip_addr());
-                // test EU IP address
-                //$userLocation = $http->getJSON('https://extreme-ip-lookup.com/json/85.214.132.117');
-                $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['countryCode'].'?fields=regionalBlocs');
+
+                $ipAddress = $this->get_user_ip_addr();
+                //$ipAddress = '85.214.132.117'; // test EU IPv4 address
+                //$ipAddress = '2003:da:cbd6:8872:29f3:69e5:f8fc:9c04'; // test EU IPv6 address
+
+                // old service that doesn't support IPv6
+                //$userLocation = $http->getJSON('https://extreme-ip-lookup.com/json/'.$ipAddress);
+                //$countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['countryCode'].'?fields=regionalBlocs');
+
+                // new service that does support IPv6
+                $userLocation = $http->getJSON('https://ip.nf/'.$ipAddress.'.json');
+                $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['ip']['country_code'].'?fields=regionalBlocs');
+
                 if($countryInfo['regionalBlocs'] && $this->hasEuBloc($countryInfo['regionalBlocs'])) {
                     $this->wire('session')->userFromEu = 'true';
                 }
@@ -53,14 +70,6 @@ class CookieManagementBanner extends WireData implements Module {
         }
 
         $this->addHookAfter('Page::render', null, function(HookEvent $event) {
-
-            $page = $event->object;
-
-            // don't render in formbuilder iframe
-            if($page->template == 'form-builder') return;
-
-            // stop here in backend except on this module's config page (for demonstration)
-            if($page->template == 'admin' && $this->wire('input')->get->name != $this) return;
 
             // get user language to determine what language to output banner text in
             if($this->wire('languages')) {
