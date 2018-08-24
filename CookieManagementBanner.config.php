@@ -31,6 +31,18 @@ $config = array(
                 'value' => 1
             ),
             array(
+                'type' => 'radios',
+                'name' => 'js_version',
+                'label' => __('JS Version'),
+                'description' => __('Which version of the JS file to use.'),
+                'notes' => __("The vanilla JS version is thanks to RolandToth(@tpr), but is currently in need of further testing, so use with care for the time being. This setting will be removed and this version will become the default sometime soon."),
+                'options' => array(
+                    'jquery' => __('jQuery'),
+                    'vanilla' => __('Vanilla JS')
+                ),
+                'value' => 'jquery'
+            ),
+            array(
                 'type' => 'checkbox',
                 'name' => 'eu_visitors_only',
                 'label' => __('Only display for EU visitors'),
