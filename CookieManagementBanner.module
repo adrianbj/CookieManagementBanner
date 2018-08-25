@@ -20,13 +20,16 @@ class CookieManagementBanner extends WireData implements Module {
         return array(
             'title'    => 'Cookie Management Banner',
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
-            'author'   => 'Adrian Jones and Oliver Walker',
+            'author'   => 'Adrian Jones, Oliver Walker, David Miller, and Roland Toth',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.3.3',
+            'version'  => '0.4.0',
             'autoload' => true,
             'singular' => true
         );
     }
+
+    protected $userFromEu = array();
+    protected $isModuleSettingsPage = false;
 
     public function init() {}
 
@@ -37,18 +40,22 @@ class CookieManagementBanner extends WireData implements Module {
         // don't render in formbuilder iframe
         if($this->wire('page')->template == 'form-builder') return;
 
+        $this->isModuleSettingsPage = $this->wire('page')->process == 'ProcessModule' && $this->wire('input')->get->name == $this ? true : false;
+
         // stop here in backend except on this module's config page (for demonstration)
-        if($this->wire('page')->template == 'admin' && $this->wire('input')->get->name != $this) return;
+        if($this->wire('page')->template == 'admin' && !$this->isModuleSettingsPage) return;
 
         if($this->eu_visitors_only) {
             $this->auto_fire = 'false';
-            if(!$this->wire('session')->userFromEu) {
+            if(!$this->wire('session')->userFromEu || $this->isModuleSettingsPage || $this->wire('session')->userFromEu['test'] == 'true') {
                 $http = new WireHttp();
 
-                if($this->wire('page')->template == 'admin' && $this->wire('input')->get->name == $this) {
+                if($this->isModuleSettingsPage) {
+                    $this->userFromEu['test'] = 'true';
                     $ipAddress = $this->ip_test ?: '';
                 }
                 else {
+                    $this->userFromEu['test'] = 'false';
                     $ipAddress = '';
                 }
 
@@ -79,19 +86,21 @@ class CookieManagementBanner extends WireData implements Module {
 
 
                 if(isset($countryInfo['regionalBlocs']) && $countryInfo['regionalBlocs'] != '' && $this->hasEuBloc($countryInfo['regionalBlocs'])) {
-                    $this->wire('session')->userFromEu = 'true';
+                    $this->userFromEu['value'] = 'true';
                 }
                 else {
-                    $this->wire('session')->userFromEu = 'false';
+                    $this->userFromEu['value'] = 'false';
                 }
 
                 if($this->wire('modules')->isInstalled('TracyDebugger') && method_exists('\TD', 'barDump')) {
                     \TD::barDump($userLocation, 'User Location from: '. $this->usedService);
-                    \TD::barDump($countryInfo, 'From EU Test: ' . $this->wire('session')->userFromEu);
+                    \TD::barDump($countryInfo, 'From EU Test: ' . $this->userFromEu['value']);
                 }
 
+                $this->wire('session')->userFromEu = $this->userFromEu;
+
             }
-            if($this->wire('session')->userFromEu != 'true') {
+            if($this->wire('session')->userFromEu['value'] != 'true') {
                 $this->auto_fire = 'true';
             }
 
@@ -111,7 +120,7 @@ class CookieManagementBanner extends WireData implements Module {
             // inject assets and banner tpl files
             $moduleUrl = $this->wire('config')->urls->$this;
             // we don't need to load the tpl or css files if the user isn't potentially going to see the banner
-            if(!$this->eu_visitors_only || ($this->eu_visitors_only && $this->wire('session')->userFromEu == 'true')) {
+            if(!$this->eu_visitors_only || ($this->eu_visitors_only && $this->wire('session')->userFromEu['value'] == 'true')) {
                 $cookieBanner = wireRenderFile($this->wire('config')->paths->$this.'wrapper.tpl.php', array('module' => $this, 'lang' => $lang));
                 if($this->autoload_assets) $event->return = $this->str_replace_once("<link ", "<link rel='stylesheet' type='text/css' href='{$moduleUrl}assets/css/{$this}.css' />\n<link ", $event->return);
             }
@@ -120,7 +129,7 @@ class CookieManagementBanner extends WireData implements Module {
             }
             // we still need the js file regardless of whether they will see the banner or not so that we can auto_fire
             // the tracking beacon for Google Tag Manager and the dataLayer variable
-            $jsVars = '
+            $jsInline = '
             <script>
                 var pwcmb_settings = {
                     status: "'.$this->status.'",
@@ -130,17 +139,22 @@ class CookieManagementBanner extends WireData implements Module {
                 };
             </script>
             ';
+            if($this->isModuleSettingsPage) {
+                $jsInline .= '
+                <script>
+                    var pwcmbClearLS = function() {
+                        localStorage.removeItem("pwcmbAllowCookies");
+                        localStorage.removeItem("pwcmbSelectionMade");
+                        localStorage.removeItem("pwcmbVersion");
+                        localStorage.removeItem("pwcmbViewCount");
+                        window.location.reload(true);
+                    }
+                </script>';
+            }
             $jsFilename = $this->js_version == 'jquery' ? $this : $this . '.vanilla';
             $jsFile = $this->autoload_assets ? "<script defer src='{$moduleUrl}assets/js/{$jsFilename}.js'></script>" : "";
-            $event->return = str_replace("</body>", "{$cookieBanner}{$jsVars}{$jsFile}</body>", $event->return);
+            $event->return = str_replace("</body>", "{$cookieBanner}{$jsInline}{$jsFile}</body>", $event->return);
 
-        });
-
-        // remove userFromEU session variable when saving the module config settings page
-        // makes it easier to use the IP Address Test field
-        $this->wire('modules')->addHookAfter('saveModuleConfigData', null, function($event) {
-            if($event->arguments[0] != $this) return;
-            $this->wire('session')->remove('userFromEu');
         });
 
     }

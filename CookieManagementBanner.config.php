@@ -44,39 +44,6 @@ $config = array(
             ),
             array(
                 'type' => 'checkbox',
-                'name' => 'eu_visitors_only',
-                'label' => __('Only display for EU visitors'),
-                'description' => __('Only visitors from the EU (based on IP address) will see the banner.'),
-                'notes' => __('This will send location data to the IP to Country service selected, along with https://restcountries.eu to determine if the user is in a country in the EU.'),
-                'columnWidth' => 33,
-                'value' => null
-            ),
-            array(
-                'type' => 'AsmSelect',
-                'name' => 'ip_country_service',
-                'label' => __('IP to country service'),
-                'description' => __('Service to determine user\'s country. Only relevant if "Only display for EU visitors" is checked. Services will be pinged in the selected order.'),
-                'notes' => __('A big thanks to all these free services, especially [https://ip.nf/](https://ip.nf/) who kindly answered many questions about their service.'),
-                'options' => array(
-                    'ip.nf' => 'https://ip.nf/',
-                    'geoip.nekudo.com' => 'https://geoip.nekudo.com/api/',
-                    'ip.sb' => 'https://ip.sb/api/'
-                ),
-                'columnWidth' => 34,
-                'required' => true,
-                'requiredIf' => 'eu_visitors_only=1',
-                'value' => array('ip.nf', 'geoip.nekudo.com', 'ip.sb')
-            ),
-            array(
-                'type' => 'text',
-                'name' => 'ip_test',
-                'label' => __('IP Address Test'),
-                'description' => __('You can use this to test the result of an IP address. This is only relevant on this module settings page - it won\'t affect what is reported for users on the site.'),
-                'notes' => __("You can use 85.214.132.117 or 2003:da:cbd6:8872:29f3:69e5:f8fc:9c04 as valid tests for Germany (which is in the EU). If this is blank the system will use your actual IP address.\n\n** From EU Test: ** `".$this->wire('session')->userFromEu."`"),
-                'columnWidth' => 33
-            ),
-            array(
-                'type' => 'checkbox',
                 'name' => 'allow_manage',
                 'label' => __('Allow users to manage'),
                 'description' => __('This gives users the option to manage their acceptance of tracking cookies.'),
@@ -91,6 +58,58 @@ $config = array(
                 'columnWidth' => 50,
                 'value' => 0
             ),
+            array(
+                'type' => 'checkbox',
+                'name' => 'eu_visitors_only',
+                'label' => __('Only display for EU visitors'),
+                'description' => __('Only visitors from the EU (based on IP address) will see the banner.'),
+                'notes' => __('This will send location data to the IP to Country service selected, along with https://restcountries.eu to determine if the user is in a country in the EU.'),
+                'columnWidth' => 50,
+                'value' => null
+            ),
+            array(
+                'type' => 'AsmSelect',
+                'name' => 'ip_country_service',
+                'label' => __('IP to country service'),
+                'description' => __('Service to determine user\'s country. Only relevant if "Only display for EU visitors" is checked. Services will be pinged in the selected order.'),
+                'notes' => __('A big thanks to all these free services, especially [https://ip.nf/](https://ip.nf/) who kindly answered many questions about their service.'),
+                'options' => array(
+                    'ip.nf' => 'https://ip.nf/',
+                    'geoip.nekudo.com' => 'https://geoip.nekudo.com/api/',
+                    'ip.sb' => 'https://ip.sb/api/'
+                ),
+                'columnWidth' => 50,
+                'showIf' => 'eu_visitors_only=1',
+                'required' => true,
+                'requiredIf' => 'eu_visitors_only=1',
+                'value' => array('ip.nf', 'geoip.nekudo.com', 'ip.sb')
+            )
+        )
+    ),
+    // Testing
+    array(
+        'type' => 'fieldset',
+        'name' => 'testing',
+        'label' => __("Testing"),
+        'children' => array(
+            array(
+                'type' => 'markup',
+                'name' => 'clear_local_storage',
+                'label' => __('Clear Local Storage'),
+                'description' => __('This will clear the LocalStorage data to emulate a new visitor to the site.'),
+                'notes' => __('Clicking this will reload the page to trigger the banner to load.'),
+                'columnWidth' => 50,
+                'value' => '<button onclick="pwcmbClearLS()" class="ui-button ui-widget ui-corner-all required ui-state-default" name="clear_local_storage" value="Clear" type="button"><span class="ui-button-text">Clear</span></button>'
+            ),
+            array(
+                'type' => 'text',
+                'name' => 'ip_test',
+                'label' => __('IP Address Test'),
+                'description' => __('You can use this to test the result of an IP address. This is only relevant on this module settings page - it won\'t affect what is reported for users on the site.'),
+                'notes' => __("You can use 85.214.132.117 or 2003:da:cbd6:8872:29f3:69e5:f8fc:9c04 as valid tests for Germany (which is in the EU). If this is blank the system will use your actual IP address.\n\n** From EU test: ** `".$this->wire('session')->userFromEu['value']."`"),
+                'columnWidth' => 50,
+                'showIf' => 'eu_visitors_only=1'
+            )
         )
     ),
     // Notice Content
