@@ -72,10 +72,9 @@ $config = array(
                 'name' => 'ip_country_service',
                 'label' => __('IP to country service'),
                 'description' => __('Service to determine user\'s country. Only relevant if "Only display for EU visitors" is checked. Services will be pinged in the selected order.'),
-                'notes' => __('A big thanks to all these free services, especially [https://ip.nf/](https://ip.nf/) who kindly answered many questions about their service.'),
+                'notes' => __('A big thanks to these free services, especially [https://ip.nf/](https://ip.nf/) who kindly answered many questions about their service.'),
                 'options' => array(
                     'ip.nf' => 'https://ip.nf/',
-                    'geoip.nekudo.com' => 'https://geoip.nekudo.com/api/',
                     'ip.sb' => 'https://ip.sb/api/'
                 ),
                 'columnWidth' => 50,
