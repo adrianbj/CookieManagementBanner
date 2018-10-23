@@ -22,7 +22,7 @@ class CookieManagementBanner extends WireData implements Module {
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
             'author'   => 'Adrian Jones, Oliver Walker, David Miller, and Roland Toth',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.4.2',
+            'version'  => '0.4.3',
             'autoload' => true,
             'singular' => true
         );
@@ -65,12 +65,6 @@ class CookieManagementBanner extends WireData implements Module {
                         $userLocation = $http->getJSON('https://ip.nf/' . ($ipAddress != '' ? $ipAddress : 'me') . '.json');
                         if(!isset($userLocation['ip']['country_code']) || $userLocation['ip']['country_code'] == '') continue;
                         $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['ip']['country_code'].'?fields=regionalBlocs');
-                    }
-                    if($ipService == 'geoip.nekudo.com') {
-                        // no limit service that supports IPv4 and IPv6
-                        $userLocation = $http->getJSON('https://geoip.nekudo.com/api/'.$ipAddress);
-                        if(!isset($userLocation['country']['code']) || $userLocation['country']['code'] == '') continue;
-                        $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['country']['code'].'?fields=regionalBlocs');
                     }
                     if($ipService == 'ip.sb') {
                         // no info provided on limits
