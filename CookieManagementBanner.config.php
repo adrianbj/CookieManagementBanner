@@ -105,7 +105,7 @@ $config = array(
                 'name' => 'ip_test',
                 'label' => __('IP Address Test'),
                 'description' => __('You can use this to test the result of an IP address. This is only relevant on this module settings page - it won\'t affect what is reported for users on the site.'),
-                'notes' => __("You can use 85.214.132.117 or 2003:da:cbd6:8872:29f3:69e5:f8fc:9c04 as valid tests for Germany (which is in the EU). If this is blank the system will use your actual IP address.\n\n** From EU test: ** `".($this->wire('session')->userFromEu ? $this->wire('session')->userFromEu['value'] : 'Not Tested') ."`"),
+                'notes' => __("You can use 85.214.132.117 or 2003:da:cbd6:8872:29f3:69e5:f8fc:9c04 as valid tests for Germany (which is in the EU). If this is blank the system will use your actual IP address.\n\n** From EU test: ** `".(isset($this->wire('session')->userFromEu['value']) ? $this->wire('session')->userFromEu['value'] : 'Not Tested') ."`"),
                 'columnWidth' => 50,
                 'showIf' => 'eu_visitors_only=1'
             )

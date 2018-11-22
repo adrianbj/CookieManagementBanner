@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     cookieMonster.setStatus(); //on page load
 
-                    // if they haven"t explicitly accepted it (ie: auto-accept) then display the banner
+                    // if they haven't explicitly accepted it (ie: auto-accept) then display the banner
                     if (pwcmb_settings.auto_accept && cookieMonster.cfg.viewCount != -1) {
                         cookieMonster.ui.show();
                     }
@@ -274,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             cookieMonster.allow(false);
                         }
 
-                        // but if they haven"t explicitly allowed cookies, then display the banner
+                        // but if they haven't explicitly allowed cookies, then display the banner
                         if (cookieMonster.cfg.viewCount >= 0) {
                             cookieMonster.ui.show();
                             cookieMonster.cfg.viewCount++;

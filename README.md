@@ -24,6 +24,8 @@ You can also provide a link on your site (probably in the footer) like this that
 <a href="#cookies" class="js-pwcmb-notice-toggle">Manage Your Cookies</a>
 ```
 
+NOTE: AdBlockPlus and other browser adblockers may prevent users from seeing the banner. This is not considered a bug and currently there are no plans to attempt to "fix" this.
+
 ### Support Forum
 For support for this module, please visit this thread on the ProcessWire forum: https://processwire.com/talk/topic/19525-cookie-management-banner/
 
