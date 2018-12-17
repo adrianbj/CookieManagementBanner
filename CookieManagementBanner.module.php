@@ -22,9 +22,10 @@ class CookieManagementBanner extends WireData implements Module {
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
             'author'   => 'Adrian Jones, Oliver Walker, David Miller, and Roland Toth',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.4.4',
+            'version'  => '0.4.5',
             'autoload' => true,
-            'singular' => true
+            'singular' => true,
+            'requires'  => 'PHP>=5.4.4',
         );
     }
 
@@ -100,7 +101,7 @@ class CookieManagementBanner extends WireData implements Module {
 
         }
 
-        $this->addHookAfter('Page::render', null, function(HookEvent $event) {
+        $this->wire()->addHookAfter('Page::render', null, function(HookEvent $event) {
 
             // get user language to determine what language to output banner text in
             if($this->wire('languages')) {
