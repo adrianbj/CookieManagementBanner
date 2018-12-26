@@ -27,7 +27,7 @@ $config = array(
                 'name' => 'autoload_assets',
                 'label' => __('Autoload Assets'),
                 'description' => __('Autoload module CSS and JS files.'),
-                'notes' => __("If you disable this, you will need to load these files manually:\n```<link rel='stylesheet' type='text/css' href='/site/modules/CookieManagementBanner/assets/css/CookieManagementBanner.css' />\n<script defer src='/site/modules/CookieManagementBanner/assets/js/CookieManagementBanner.js'></script>```\nNOTE: you must load the JS file with the defer attribute."),
+                'notes' => __("If you disable this, you will need to load these files manually:\n```&lt;link rel='stylesheet' type='text/css' href='/site/modules/CookieManagementBanner/assets/css/CookieManagementBanner.css' /&gt;\n&lt;script defer src='/site/modules/CookieManagementBanner/assets/js/CookieManagementBanner.js'&gt;&lt;/script&gt;```\nNOTE: you must load the JS file with the defer attribute."),
                 'value' => 1
             ),
             array(
