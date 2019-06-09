@@ -22,7 +22,7 @@ class CookieManagementBanner extends WireData implements Module {
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
             'author'   => 'Adrian Jones, Oliver Walker, David Miller, and Roland Toth',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.4.6',
+            'version'  => '0.4.7',
             'autoload' => true,
             'singular' => true,
             'requires'  => 'PHP>=5.4.4',
@@ -53,17 +53,17 @@ class CookieManagementBanner extends WireData implements Module {
 
                 if($this->isModuleSettingsPage) {
                     $this->userFromEu['test'] = 'true';
-                    $ipAddress = $this->ip_test ?: '';
+                    $ipAddress = $this->ip_test ?: $this->get_client_ip();
                 }
                 else {
                     $this->userFromEu['test'] = 'false';
-                    $ipAddress = '';
+                    $ipAddress = $this->get_client_ip();
                 }
 
                 foreach($this->ip_country_service as $ipService) {
                     if($ipService == 'ip.nf') {
                         // supports IPv6 but their server only supports 40 req/s which I worry might be an issue in the future?
-                        $userLocation = $http->getJSON('https://ip.nf/' . ($ipAddress != '' ? $ipAddress : 'me') . '.json');
+                        $userLocation = $http->getJSON('https://ip.nf/' . $ipAddress . '.json');
                         if(!isset($userLocation['ip']['country_code']) || $userLocation['ip']['country_code'] == '') continue;
                         $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['ip']['country_code'].'?fields=regionalBlocs');
                     }
@@ -153,6 +153,21 @@ class CookieManagementBanner extends WireData implements Module {
         });
 
     }
+
+
+    // get user IP address
+    private function get_client_ip() {
+		if (!empty($_SERVER["HTTP_CLIENT_IP"])) {
+			$ip = $_SERVER["HTTP_CLIENT_IP"];
+		}
+		elseif (!empty($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+			$ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+		}
+		else {
+			$ip = $_SERVER["REMOTE_ADDR"];
+		}
+		return $ip;
+	}
 
 
     // determine if return regionalBlocs array contains EU
