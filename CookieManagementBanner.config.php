@@ -221,7 +221,7 @@ $config = array(
                 ),
                 'columnWidth' => 33,
                 'required' => true,
-                'value' => 'top_overlay'
+                'value' => 'bottom_overlay'
             )
         )
     )
