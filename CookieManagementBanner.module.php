@@ -22,7 +22,7 @@ class CookieManagementBanner extends WireData implements Module {
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
             'author'   => 'Adrian Jones, Oliver Walker, David Miller, and Roland Toth',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.4.8',
+            'version'  => '0.4.9',
             'autoload' => true,
             'singular' => true,
             'requires'  => 'PHP>=5.4.4',
@@ -60,36 +60,43 @@ class CookieManagementBanner extends WireData implements Module {
                     $ipAddress = $this->get_client_ip();
                 }
 
-                foreach($this->ip_country_service as $ipService) {
-                    if($ipService == 'ip.nf') {
-                        // supports IPv6 but their server only supports 40 req/s which I worry might be an issue in the future?
-                        $userLocation = $http->getJSON('https://ip.nf/' . $ipAddress . '.json');
-                        if(!isset($userLocation['ip']['country_code']) || $userLocation['ip']['country_code'] == '') continue;
-                        $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['ip']['country_code'].'?fields=regionalBlocs');
+                if($ipAddress) {
+                    foreach($this->ip_country_service as $ipService) {
+                        if($ipService == 'ip.nf') {
+                            // supports IPv6 but their server only supports 40 req/s which I worry might be an issue in the future?
+                            $userLocation = $http->getJSON('https://ip.nf/' . $ipAddress . '.json');
+                            if(!isset($userLocation['ip']['country_code']) || $userLocation['ip']['country_code'] == '') continue;
+                            $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['ip']['country_code'].'?fields=regionalBlocs');
+                        }
+                        if($ipService == 'ip.sb') {
+                            // no info provided on limits
+                            $userLocation = $http->getJSON('https://api.ip.sb/geoip/'.$ipAddress);
+                            if(!isset($userLocation['country_code']) || $userLocation['country_code'] == '') continue;
+                            $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['country_code'].'?fields=regionalBlocs');
+                        }
+                        if(isset($countryInfo['regionalBlocs']) && $countryInfo['regionalBlocs'] != '') {
+                            $this->usedService = $ipService;
+                            break;
+                        }
                     }
-                    if($ipService == 'ip.sb') {
-                        // no info provided on limits
-                        $userLocation = $http->getJSON('https://api.ip.sb/geoip/'.$ipAddress);
-                        if(!isset($userLocation['country_code']) || $userLocation['country_code'] == '') continue;
-                        $countryInfo = $http->getJSON('https://restcountries.eu/rest/v2/alpha/'.$userLocation['country_code'].'?fields=regionalBlocs');
-                    }
-                    if(isset($countryInfo['regionalBlocs']) && $countryInfo['regionalBlocs'] != '') {
-                        $this->usedService = $ipService;
-                        break;
-                    }
-                }
 
+                    if(isset($countryInfo['regionalBlocs']) && $countryInfo['regionalBlocs'] != '' && $this->hasEuBloc($countryInfo['regionalBlocs'])) {
+                        $this->userFromEu['value'] = 'true';
+                    }
+                    else {
+                        $this->userFromEu['value'] = 'false';
+                    }
 
-                if(isset($countryInfo['regionalBlocs']) && $countryInfo['regionalBlocs'] != '' && $this->hasEuBloc($countryInfo['regionalBlocs'])) {
-                    $this->userFromEu['value'] = 'true';
                 }
                 else {
-                    $this->userFromEu['value'] = 'false';
+                    // don't know IP address so must force banner to display in case they are from EU
+                    $this->userFromEu['value'] = 'true';
                 }
 
+
                 if($this->wire('modules')->isInstalled('TracyDebugger') && method_exists('\TD', 'barDump')) {
-                    \TD::barDump($userLocation, 'User Location from: '. $this->usedService);
-                    \TD::barDump($countryInfo, 'From EU Test: ' . $this->userFromEu['value']);
+                    if(isset($userLocation)) \TD::barDump($userLocation, 'User Location from: '. $this->usedService);
+                    if(isset($countryInfo)) \TD::barDump($countryInfo, 'From EU Test: ' . $this->userFromEu['value']);
                 }
 
                 $this->wire('session')->userFromEu = $this->userFromEu;
@@ -163,9 +170,12 @@ class CookieManagementBanner extends WireData implements Module {
 		elseif (!empty($_SERVER["HTTP_X_FORWARDED_FOR"])) {
 			$ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
 		}
-		else {
+		elseif (!empty($_SERVER["REMOTE_ADDR"])) {
 			$ip = $_SERVER["REMOTE_ADDR"];
-		}
+        }
+        else {
+            $ip = null;
+        }
 		return $ip;
 	}
 
