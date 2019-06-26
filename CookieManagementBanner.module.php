@@ -22,7 +22,7 @@ class CookieManagementBanner extends WireData implements Module {
             'summary'  => __('Cookie management banner allows users to manage tracking cookies.'),
             'author'   => 'Adrian Jones, Oliver Walker, David Miller, and Roland Toth',
             'href'     => 'https://processwire.com/talk/topic/19525-cookie-management-banner/',
-            'version'  => '0.4.9',
+            'version'  => '0.4.10',
             'autoload' => true,
             'singular' => true,
             'requires'  => 'PHP>=5.4.4',

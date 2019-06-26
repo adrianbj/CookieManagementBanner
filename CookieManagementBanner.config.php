@@ -216,7 +216,6 @@ $config = array(
                 'name' => 'style',
                 'label' => __("Position"),
                 'options' => array(
-                    'top_overlay' => __('Fixed Overlay at Top of Page'),
                     'bottom_overlay' => __('Fixed Overlay at Bottom of Page')
                 ),
                 'columnWidth' => 33,
