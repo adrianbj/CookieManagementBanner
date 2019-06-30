@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     var el = document.querySelector(".js-pwcmb-notice-toggle");
                     cookieMonster.cfg.allowCookies = "y";
                     cookieMonster.sendTrackingBeacon();
-                    el.parentElement.remove(el);
+                    if(el) el.parentElement.remove(el);
                     return;
                 }
 
