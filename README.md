@@ -1,4 +1,7 @@
 # Cookie Management Banner for ProcessWire
+
+## This repo is no longer being maintained - instead please see [this fork](https://github.com/webmanufaktur/CookieManagementBanner)
+
 This module adds a cookie management banner for GDPR compliance.
 
 The user can accept all cookies or they can choose to not accept tracking/marketing cookies.
